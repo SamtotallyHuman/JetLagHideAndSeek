@@ -41,7 +41,7 @@ out center;
 is_in(${a}, ${i})->.a;
 rel(pivot.a)["admin_level"="${r}"];
 out geom;
-    `,c=await _i(l,"Determining matching zone...");return Hu(c).features?.[0]},y0=async(a,i)=>{const r=(await(await fetch(`${m_}?lang=${i}&q=${a}`)).json()).features;return r.forEach(l=>{l.geometry.coordinates=y_(l.geometry.coordinates),l.properties.extent&&(l.properties.extent=[l.properties.extent[1],l.properties.extent[0],l.properties.extent[3],l.properties.extent[2]])}),ba.uniqBy(r.filter(l=>l.properties.osm_type==="R"),l=>l.properties.osm_id)},w0=a=>a.properties.state?`${a.properties.name}, ${a.properties.state}, ${a.properties.country}`:a.properties.country?`${a.properties.name}, ${a.properties.country}`:a.properties.name,y_=a=>[a[1],a[0]],b0=async()=>await(await pc("/JetLagHideAndSeek//coastline50.geojson","Fetching coastline data...","jlhs-map-generator-permanent-cache")).json(),x0=async a=>{const r=`
+    `,c=await _i(l,"Determining matching zone...");return Hu(c).features?.[0]},y0=async(a,i)=>{const r=(await(await fetch(`${m_}?lang=${i}&q=${a}`)).json()).features;return r.forEach(l=>{l.geometry.coordinates=y_(l.geometry.coordinates),l.properties.extent&&(l.properties.extent=[l.properties.extent[1],l.properties.extent[0],l.properties.extent[3],l.properties.extent[2]])}),ba.uniqBy(r.filter(l=>l.properties.osm_type==="R"),l=>l.properties.osm_id)},w0=a=>a.properties.state?`${a.properties.name}, ${a.properties.state}, ${a.properties.country}`:a.properties.country?`${a.properties.name}, ${a.properties.country}`:a.properties.name,y_=a=>[a[1],a[0]],b0=async()=>await(await pc("/./JetLagHideAndSeek//coastline50.geojson","Fetching coastline data...","jlhs-map-generator-permanent-cache")).json(),x0=async a=>{const r=`
 [out:json];
 node(${a.split("/")[1]});
 wr(bn);
