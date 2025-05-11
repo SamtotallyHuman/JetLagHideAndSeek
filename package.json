@@ -7,7 +7,10 @@
         "build": "astro build",
         "preview": "astro preview",
         "astro": "astro",
-        "lint": "eslint --fix src && prettier . --write"
+        "lint": "eslint --fix src && prettier . --write",
+        "predeploy": "npm run build && touch dist/.nojekyll",
+        "deploy": "gh-pages -d dist",
+        "postdeploy": "echo 'Deployment complete!'"
     },
     "dependencies": {
         "@astrojs/partytown": "^2.1.4",
@@ -67,6 +70,7 @@
         "eslint-config-prettier": "^10.0.1",
         "eslint-plugin-import-alias": "^1.2.0",
         "eslint-plugin-react": "^7.37.4",
+        "gh-pages": "^6.3.0",
         "globals": "^16.0.0",
         "prettier": "3.5.0",
         "typescript-eslint": "^8.24.0"

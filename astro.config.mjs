@@ -47,6 +47,6 @@ export default defineConfig({
     devToolbar: {
         enabled: false,
     },
-    site: "https://taibeled.github.io",
-    base: "JetLagHideAndSeek",
+    site: "https://samtotallyhuman.github.io",
+    base: "./JetLagHideAndSeek/",
 });
