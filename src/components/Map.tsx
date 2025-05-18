@@ -19,12 +19,13 @@ import {
     planningModeEnabled,
     isLoading,
     autoZoom,
+    additionalMapGeoLocations,
 } from "../lib/context";
 import { useStore } from "@nanostores/react";
 import { useEffect, useMemo } from "react";
 import { toast } from "react-toastify";
 import * as turf from "@turf/turf";
-import { clearCache, determineGeoJSON, type OpenStreetMap } from "../maps/api";
+import { clearCache, determineGeoJSON } from "../maps/api";
 import { adjustPerRadius, radiusPlanningPolygon } from "../maps/radius";
 import { DraggableMarkers } from "./DraggableMarkers";
 import {
@@ -37,19 +38,48 @@ import { PolygonDraw } from "./PolygonDraw";
 import { adjustPerMeasuring, measuringPlanningPolygon } from "@/maps/measuring";
 import { LeafletFullScreenButton } from "./LeafletFullScreenButton";
 import { hiderifyQuestion } from "@/maps";
-import { holedMask } from "@/maps/geo-utils";
+import { holedMask, unionize } from "@/maps/geo-utils";
 import { MapPrint } from "./MapPrint";
 
-export const refreshMapData = (
-    $mapGeoLocation: OpenStreetMap,
-    screen: boolean = true,
-    map?: LeafletMap,
-) => {
+export const refreshMapData = (screen: boolean = true, map?: LeafletMap) => {
     const refresh = async () => {
-        const mapGeoData = await determineGeoJSON(
-            $mapGeoLocation.properties.osm_id.toString(),
-            $mapGeoLocation.properties.osm_type,
+        const mapGeoDatum = await Promise.all(
+            [
+                { location: mapGeoLocation.get(), added: true, base: true },
+                ...additionalMapGeoLocations.get(),
+            ].map(async (location) => ({
+                added: location.added,
+                data: await determineGeoJSON(
+                    location.location.properties.osm_id.toString(),
+                    location.location.properties.osm_type,
+                ),
+            })),
         );
+
+        let mapGeoData = turf.featureCollection([
+            unionize(
+                turf.featureCollection(
+                    mapGeoDatum
+                        .filter((x) => x.added)
+                        .flatMap((x) => x.data.features),
+                ) as any,
+            ),
+        ]);
+
+        const differences = mapGeoDatum
+            .filter((x) => !x.added)
+            .map((x) => x.data);
+
+        if (differences.length > 0) {
+            mapGeoData = turf.featureCollection([
+                turf.difference(
+                    turf.featureCollection([
+                        mapGeoData.features[0],
+                        ...differences.flatMap((x) => x.features),
+                    ]),
+                )!,
+            ]);
+        }
 
         if (turf.coordAll(mapGeoData).length > 10000) {
             turf.simplify(mapGeoData, {
@@ -78,6 +108,7 @@ export const refreshMapData = (
 };
 
 export const Map = ({ className }: { className?: string }) => {
+    useStore(additionalMapGeoLocations);
     const $mapGeoLocation = useStore(mapGeoLocation);
     const $questions = useStore(questions);
     const $highlightTrainLines = useStore(highlightTrainLines);
@@ -104,7 +135,7 @@ export const Map = ({ className }: { className?: string }) => {
                 mapGeoData = polyGeoData;
                 mapGeoJSON.set(polyGeoData);
             } else {
-                mapGeoData = await refreshMapData($mapGeoLocation, false, map);
+                mapGeoData = await refreshMapData(false, map);
             }
         }
 
@@ -462,6 +493,34 @@ export const Map = ({ className }: { className?: string }) => {
                                     lng: e.latlng.lng,
                                 },
                             });
+                        },
+                    },
+                    {
+                        text: "Copy Coordinates",
+                        callback: (e: any) => {
+                            if (!navigator || !navigator.clipboard) {
+                                toast.error(
+                                    "Clipboard API not supported in your browser",
+                                );
+                                return;
+                            }
+
+                            const latitude = e.latlng.lat;
+                            const longitude = e.latlng.lng;
+
+                            toast.promise(
+                                navigator.clipboard.writeText(
+                                    `${Math.abs(latitude)}°${latitude > 0 ? "N" : "S"}, ${Math.abs(
+                                        longitude,
+                                    )}°${longitude > 0 ? "E" : "W"}`,
+                                ),
+                                {
+                                    pending: "Writing to clipboard...",
+                                    success: "Coordinates copied!",
+                                    error: "An error occurred while copying",
+                                },
+                                { autoClose: 1000 },
+                            );
                         },
                     },
                 ]}
