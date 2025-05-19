@@ -65,9 +65,9 @@ export const MatchingQuestionComponent = ({
                                 3: "OSM Zone 3 (region in Japan)",
                                 4: "OSM Zone 4 (prefecture in Japan)",
                                 5: "OSM Zone 5",
-                                6: "OSM Zone 6",
-                                7: "OSM Zone 7",
-                                8: "OSM Zone 8",
+                                6: "OSM Zone 6 (City of London)",
+                                7: "OSM Zone 7 (Statistical Zone)",
+                                8: "OSM Zone 8 (Borough)",
                                 9: "OSM Zone 9",
                                 10: "OSM Zone 10",
                             }}
